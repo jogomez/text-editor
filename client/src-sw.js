@@ -5,6 +5,10 @@ const { CacheableResponsePlugin } = require('workbox-cacheable-response');
 const { ExpirationPlugin } = require('workbox-expiration');
 const { precacheAndRoute } = require('workbox-precaching/precacheAndRoute');
 
+/* 
+  This method will add entries to the precache list and add a route to respond to fetch events.
+  Source: https://developer.chrome.com/docs/workbox/reference/workbox-precaching/#method-precacheAndRoute
+*/
 precacheAndRoute(self.__WB_MANIFEST);
 
 const pageCache = new CacheFirst({
@@ -26,5 +30,21 @@ warmStrategyCache({
 
 registerRoute(({ request }) => request.mode === 'navigate', pageCache);
 
-// TODO: Implement asset caching
-registerRoute();
+// Implementing asset caching
+registerRoute(
+  // Defines the callback function to filter the requests to be cached, i.e. JS and CSS files.
+  ({ request }) => ['style', 'script', 'worker'].includes(request.destination),
+  new StaleWhileRevalidate({
+    cacheName: 'asset-cache',
+    plugins: [
+      // Using CacheableResponsePlugin to cache responses for a maximum of 30 days
+      new CacheableResponsePlugin({
+        statuses: [0, 200],
+      }),
+      new ExpirationPlugin({
+        maxEntries: 60,
+        maxAgeSeconds: 30 * 24 * 60 * 60, // this is equivalent to 30 days
+      })
+    ],
+  })
+);
