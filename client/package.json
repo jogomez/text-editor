@@ -2,6 +2,7 @@
   "name": "text-editor",
   "scripts": {
     "dev": "webpack-dev-server",
+    "heroku-prebuild": "npm install --dev",
     "build": "webpack --mode production",
     "start": "webpack --watch",
     "heroku-postbuild": "webpack -p --config ./webpack.prod.config.js --progress"
